@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,11 +29,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Info().Strs(k, v).Msg("    ")
 	}
 	log.Info().Msg("  Body:")
-	if bytedata, err := io.ReadAll(r.Body); err != nil {
+	if bodyData, err := io.ReadAll(r.Body); err != nil {
 		log.Error().Err(err).Msg("    Body read failed due to:")
 	} else {
-		reqBodyString := string(bytedata)
-		log.Info().Str("data", reqBodyString).Msg("    ")
+		jsonMap := make(map[string](interface{}))
+		err := json.Unmarshal(bodyData, &jsonMap)
+		if err != nil {
+			log.Warn().Err(err).Msg("    Failed to unmarshal JSON due to")
+			log.Info().Str("as string", string(bodyData)).Msg("    ")
+		} else {
+			log.Info().Interface("as map", jsonMap).Msg("    ")
+		}
 	}
 	log.Info().Msg("Processing done")
 }
