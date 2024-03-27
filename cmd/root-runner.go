@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -38,7 +39,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			log.Warn().Err(err).Msg("    Failed to unmarshal JSON due to")
 			log.Info().Str("as string", string(bodyData)).Msg("    ")
 		} else {
-			log.Info().Interface("as map", jsonMap).Msg("    ")
+			b, _ := json.MarshalIndent(jsonMap, "", "  ")
+			for _, line := range strings.Split(string(b), "\n") {
+				log.Info().Msgf("     %s", line)
+			}
 		}
 	}
 	log.Info().Msg("Processing done")
